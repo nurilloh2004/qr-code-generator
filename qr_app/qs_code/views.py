@@ -30,7 +30,7 @@ localhost = 'http://127.0.0.1:8000/media/'
 class DashboardView(generics.GenericAPIView):
     queryset = Dashboard.objects.all()
     serializer_class = DashboardSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     # pagination_class = LargeResultsSetPagination
 
     def get(self, request):
@@ -55,12 +55,14 @@ class SingleUlrQrCode(generics.GenericAPIView):
         device = data['device_type']
 
 
+        print("all ===================>>>>>>>>>",city, country, device)
+
         with contextlib.suppress(Exception):
             qr_id = request.GET.get('id')
             related_name = request.GET.get('related_name')
         print(qr_id, related_name)
 
-        
+
 
         url_qr_code = UrlQrCode.objects.get(id=qr_id)
         country = Country.objects.get_or_create(name=country)
@@ -76,16 +78,16 @@ class SingleUlrQrCode(generics.GenericAPIView):
 
         url_qr_code.scan_count += 1
         url_qr_code.save()
-        
+
         country_info = get_country_info(related_name, url_qr_code, request)
         city_info = get_city_info(related_name, url_qr_code)
         device_info = get_device_info(related_name, url_qr_code)
 
-        all_data = [{'q_id': url_qr_code.id, 'country_info': country_info, 'city_info': city_info, 
-                    'device_info': device_info, 'logo_type': url_qr_code.logo_type, 'background': url_qr_code.background, 
+        all_data = [{'q_id': url_qr_code.id, 'country_info': country_info, 'city_info': city_info,
+                    'device_info': device_info, 'logo_type': url_qr_code.logo_type, 'background': url_qr_code.background,
                     'symbol_color': url_qr_code.symbol_color, 'link': url_qr_code.link, 'color': url_qr_code.color
                     }]
-    
+
         return Response(all_data, status=status.HTTP_200_OK)
 
 
@@ -125,8 +127,8 @@ class UrlQrCodeListCreateView(generics.GenericAPIView):
             unique_id = int(UrlQrCode.objects.first().url_id) + 1
         except Exception:
             unique_id = 1
-        
-        
+
+
         if logo_type == 1:
             logo = 'static/logos/l1.png'
         elif logo_type == 2:
