@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_user_agents',
-    "urlshortner",
+    # "urlshortner",
     'corsheaders'
 
 ]
@@ -155,7 +155,7 @@ CORS_ALLOW_HEADERS = ['*']
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_ALLOW_ALL = True  
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 REST_FRAMEWORK = {
