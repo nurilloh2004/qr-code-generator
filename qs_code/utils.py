@@ -115,13 +115,20 @@ def user_information_by_qr_code(request):
     country = geolocation_data['country']
     region = geolocation_data['region']
 
+    # if request.user_agent.is_mobile and request.user_agent.os.family:
+    #     device_type = f"Mobile - {request.user_agent.os.family}"
+    # if request.user_agent.is_tablet:
+    #     device_type = "Tablet"
+    # device_type = "PC" if request.user_agent.is_pc else 'Other'
 
     device_type = ""
-    if request.user_agent.is_mobile and request.user_agent.os.family:
-        device_type = f"Mobile - {request.user_agent.os.family}"
-    if request.user_agent.is_tablet:
-        device_type = "Tablet"
-    device_type = "PC" if request.user_agent.is_pc else 'Other'
+    if request.user_agent.device.family and request.user_agent.os.family == 'iOS':
+        device_type = 'Iphone'
+    if request.user_agent.device.family and request.user_agent.os.family == 'Android':
+        device_type = 'Android'
+    if request.user_agent.is_pc and request.user_agent.device.family:
+        device_type = 'PC'
+
 
     return {'my_ip': ip or ip_address, 'country': country, 'region': region, "device_type": device_type}
 
@@ -167,5 +174,4 @@ def get_device_info(related_name, qr_id_type):
         }
         all_data.append(device)
     return all_data
-
 
