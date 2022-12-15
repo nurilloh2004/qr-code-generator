@@ -219,9 +219,9 @@ class UrlQrCodeDetailView(generics.GenericAPIView):
         qr_image_url =  "/media" + change_item.split("media")[1]
 
         my_url = f'http://10.10.0.156:3000/redirect/?id={change_item.id}/related_name={related_name}/params={qr_image_url}/'
-        qr_code_for_urls(color=color.lower(), symbol_color=symbol_color, background=background, logo_type=logo_type, qr_type=my_url, link=link)
+        qr_code_for_change_urls(color=color.lower(), symbol_color=symbol_color, background=background, logo_type=logo_type, qr_type=my_url, link=link)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'data': data}, serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     def patch(self, request, pk):
