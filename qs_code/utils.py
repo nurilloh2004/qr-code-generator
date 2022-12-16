@@ -124,9 +124,10 @@ def user_information_by_qr_code(request):
     device_type = ""
     if request.user_agent.device.family and request.user_agent.os.family == 'iOS':
         device_type = 'Iphone'
-    if request.user_agent.device.family and request.user_agent.os.family == 'Android':
+    elif request.user_agent.device.family and request.user_agent.os.family == 'Android':
         device_type = 'Android'
-    if request.user_agent.is_pc and request.user_agent.device.family:
+    else:
+        request.user_agent.is_pc and request.user_agent.device.family
         device_type = 'PC'
 
 

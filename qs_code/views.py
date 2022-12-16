@@ -210,10 +210,10 @@ class UrlQrCodeDetailView(generics.GenericAPIView):
         logo_type = data['logo_type']
         background = data['background']
         symbol_color = data['symbol_color']
-        related_name = 'vcard_ip'
+        related_name = 'ip_address'
         change_item = UrlQrCode.objects.create(link=link, color=color, logo_type=logo_type, background=background, symbol_color=symbol_color)
         change_item.save()
-        change_item = qr_code_for_change_urls(color=color, logo_type=logo_type, link=link, background=background, symbol_color=symbol_color)
+        qr_code_for_change_urls(color=color, logo_type=logo_type, link=link, background=background, symbol_color=symbol_color)
 
 
         qr_image_url =  "/media" + change_item.split("media")[1]
