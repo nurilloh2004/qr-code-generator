@@ -15,14 +15,13 @@ from .utils import (
     qr_code_for_vcard,
     user_information_by_qr_code,
     color_validation, get_country_info,
-    get_city_info, get_device_info,
-    qr_code_for_change_urls,
+    get_city_info, get_device_info
 )
 from .models import (EmailQrCode, SmsQrCode, TextQrCode, TwitterQrCode, IpAddress, Country, City, Device,
                      UrlQrCode, VcardQrCode, WifiQrCode, Dashboard)
 from .serializers import (EmailSerializer, SmsSerializer, TextSerializer, UrlDetailSerializer,
                           TwitterSerializer, UrlSerializer, VCardSerializer,
-                          WifiSerializer, UpdateSomeDatasSerializer, DashboardSerializer)
+                          WifiSerializer, DashboardSerializer)
 
 
 localhost = 'http://127.0.0.1:8000/media/'
@@ -31,7 +30,7 @@ localhost = 'http://127.0.0.1:8000/media/'
 class DashboardView(generics.GenericAPIView):
     queryset = Dashboard.objects.all()
     serializer_class = DashboardSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # pagination_class = LargeResultsSetPagination
 
     def get(self, request):
@@ -199,38 +198,83 @@ class UrlQrCodeDetailView(generics.GenericAPIView):
 
     def put(self, request, pk):
         url_qrcode = self.get_object(pk)
-        serializer = UrlDetailSerializer(url_qrcode, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        serializer = UpdateSomeDatasSerializer(url_qrcode, data=request.data)
-        data = request.data
-        link = data['link']
-        color = data['color']
-        logo_type = data['logo_type']
-        background = data['background']
-        symbol_color = data['symbol_color']
-        related_name = 'ip_address'
-        change_item = UrlQrCode.objects.create(link=link, color=color, logo_type=logo_type, background=background, symbol_color=symbol_color)
-        change_item.save()
-        qr_code_for_change_urls(color=color, logo_type=logo_type, link=link, background=background, symbol_color=symbol_color)
-
-
-        qr_image_url =  "/media" + change_item.split("media")[1]
-
-        my_url = f'http://10.10.0.156:3000/redirect/?id={change_item.id}/related_name={related_name}/params={qr_image_url}/'
-        qr_code_for_change_urls(color=color.lower(), symbol_color=symbol_color, background=background, logo_type=logo_type, qr_type=my_url, link=link)
-
-        return Response({'data': data}, serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def patch(self, request, pk):
-        url_qrcode = self.get_object(pk)
-        serializer = UrlDetailSerializer(url_qrcode, data=request.data, partial=True)
+        serializer = UrlDetailSerializer(url_qrcode, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        data = request.data
+        url = data['link']
+        color = data['color']
+        symbol_color = data['symbol_color']
+        background = data['background']
+        logo_type = data['logo_type']
+        is_active = data['is_active']
+        type_path = 'url_qr_codes/url'
+        related_name = 'ip_address'
+
+        if url == "":
+            return Response('The field can not be empty')
+
+        try:
+            unique_id = int(UrlQrCode.objects.first().url_id) + 1
+        except Exception:
+            unique_id = 1
+
+
+        if logo_type == 1:
+            logo = 'static/logos/l1.png'
+        elif logo_type == 2:
+            logo = 'static/logos/l2.png'
+        else:
+            logo = 'static/logos/l0.png'
+
+        if color == '':
+            color = 'black'
+        if symbol_color == '':
+            symbol_color = 'black'
+        if background == '':
+            background = 'white'
+
+        cl_validation = color_validation(color)
+        if not cl_validation:
+            return Response("This color is not available")
+
+        symbol_color_validation = color_validation(symbol_color)
+        if not symbol_color_validation:
+            return Response("This symbol color is not available")
+
+        background_validation = color_validation(background)
+        if not background_validation:
+            return Response("This background color is not available")
+
+        qr_id = UrlQrCode.objects.create(color=color, link=url, logo_type=logo_type, user=self.request.user, background=background,
+                        is_active=is_active, symbol_color=symbol_color, qr_image=f'{type_path}{unique_id}.png', url_id=unique_id)
+
+        print(qr_id)
+
+        try:
+            dash = Dashboard.objects.get(user=request.user)
+        except Exception:
+            dash = Dashboard.objects.create(user=request.user)
+
+        dash.url_qr.add(qr_id)
+        dash.save()
+
+        my_url = f'http://10.10.0.156:3000/redirect/?id={qr_id.id}/related_name={related_name}/params={url}/is_acitve={is_active}'
+        qr_code_for_urls(color=color.lower(), symbol_color=symbol_color, background=background, logo=logo,
+                         type_id=str(unique_id), qr_type=my_url, type_path=type_path)
+
+        data = [{
+                'qr_id': qr_id.id, 'user': self.request.user.username,
+                'qr_code_url': qr_id.qr_image.url, 'is_active': qr_id.is_active,
+                'color': color or 'black', 'symbol_color': symbol_color or 'black',
+                'logo_type': logo_type or 0, 'background': background or 'white',
+                }]
+
+        return Response({'results': data}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
         url_qrcode = self.get_object(pk)
