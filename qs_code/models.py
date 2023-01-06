@@ -32,11 +32,11 @@ TWITTER_TYPE = (
 class CommonModelFields(models.Model):
     color = models.CharField(max_length=250, blank=True, null=True)
     logo_type = models.IntegerField(default=0)
-    scan_count = models.IntegerField(default=0)
+    scan_count = models.IntegerField(default=1)
     background = models.CharField(max_length=250, blank=True, null=True)
     symbol_color = models.CharField(max_length=250, blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    
+
 
 class TimeStampModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,12 +49,12 @@ class TimeStampModel(models.Model):
 
 class Country(TimeStampModel):
     name = models.CharField(max_length=250, default='Uzbekistan')
-    scan_count = models.IntegerField(default=0)
+    scan_count = models.IntegerField(default=2)
 
 
     class Meta:
         verbose_name_plural = 'Countries'
-    
+
 
     def __str__(self):
         return f'{self.id} - {self.name}'
@@ -62,7 +62,7 @@ class Country(TimeStampModel):
 
 class City(TimeStampModel):
     name = models.CharField(max_length=250, default='Tashkent')
-    scan_count = models.IntegerField(default=0)
+    scan_count = models.IntegerField(default=3)
 
 
     class Meta:
@@ -75,7 +75,7 @@ class City(TimeStampModel):
 
 class Device(TimeStampModel):
     name = models.CharField(max_length=250, default='PC')
-    scan_count = models.IntegerField(default=0)
+    scan_count = models.IntegerField(default=4)
 
 
     def __str__(self):
@@ -86,7 +86,7 @@ class IpAddress(TimeStampModel):
     ip = models.GenericIPAddressField(protocol="both", unpack_ipv4=False, default='84.54.74.20')
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
-    device = models.ForeignKey(Device, on_delete=models.CASCADE) 
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
 
 
     class Meta:
@@ -102,14 +102,14 @@ class UrlQrCode(CommonModelFields, TimeStampModel):
     qr_image = models.ImageField(upload_to='url_qr_codes/', max_length=100, blank=True)
     location = models.ManyToManyField(IpAddress, related_name='ip_address')
     url_id = models.IntegerField(default=1)
-    
+
 
     class Meta:
         verbose_name_plural = "UrlQrCodes"
         ordering = ['-id']
-        
+
     def __str__(self):
-        return str(self.id)         
+        return str(self.id)
 
     @property
     def get_device_info(self):
@@ -138,7 +138,7 @@ class UrlQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -173,7 +173,7 @@ class VcardQrCode(CommonModelFields, TimeStampModel):
 
     class Meta:
         verbose_name_plural = "VcardQrCodes"
-        
+
     def __str__(self):
         return f'{self.id}'
 
@@ -204,7 +204,7 @@ class VcardQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -215,21 +215,21 @@ class VcardQrCode(CommonModelFields, TimeStampModel):
             }
             country_data.append(country)
         return country_data
-    
+
 
 class TextQrCode(CommonModelFields, TimeStampModel):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     text_ip = models.ManyToManyField(IpAddress, related_name='text_ip')
     text = models.TextField()
-    text_qr_image = models.FileField(upload_to='text_qr_code/', max_length=100, blank=True) 
+    text_qr_image = models.FileField(upload_to='text_qr_code/', max_length=100, blank=True)
     url_id = models.IntegerField(default=1)
 
     class Meta:
         verbose_name_plural = "TextQrCodes"
-        
+
     def __str__(self):
         return str(self.id)
-    
+
     @property
     def get_device_info(self):
         device_data = []
@@ -257,7 +257,7 @@ class TextQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -268,7 +268,7 @@ class TextQrCode(CommonModelFields, TimeStampModel):
             }
             country_data.append(country)
         return country_data
-    
+
 
 class EmailQrCode(CommonModelFields, TimeStampModel):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -281,10 +281,10 @@ class EmailQrCode(CommonModelFields, TimeStampModel):
 
     class Meta:
         verbose_name_plural = "EmailQrCodes"
-        
+
     def __str__(self):
         return self.email
-    
+
     @property
     def get_device_info(self):
         device_data = []
@@ -312,7 +312,7 @@ class EmailQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -335,7 +335,7 @@ class SmsQrCode(CommonModelFields, TimeStampModel):
 
     class Meta:
         verbose_name_plural = "SmsQrCodes"
-        
+
     def __str__(self):
         return self.number
 
@@ -366,7 +366,7 @@ class SmsQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -391,7 +391,7 @@ class WifiQrCode(CommonModelFields, TimeStampModel):
 
     class Meta:
         verbose_name_plural = "WifiQrCodes"
-        
+
     def __str__(self):
         return self.network_name
 
@@ -422,7 +422,7 @@ class WifiQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:
@@ -446,10 +446,10 @@ class TwitterQrCode(CommonModelFields, TimeStampModel):
 
     class Meta:
         verbose_name_plural = "TwitterQrCode"
-        
+
     def __str__(self):
         return self.username
-    
+
     @property
     def get_device_info(self):
         device_data = []
@@ -477,7 +477,7 @@ class TwitterQrCode(CommonModelFields, TimeStampModel):
         return city_data
 
     @property
-    def get_country_info(self):    
+    def get_country_info(self):
         country_data = []
         countries = Country.objects.all()
         for i in countries:

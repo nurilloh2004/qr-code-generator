@@ -74,8 +74,10 @@ class SingleUlrQrCode(generics.GenericAPIView):
         ip_add = IpAddress.objects.create(ip=user_ip, city=city_id, country=country_id, device=device_id)
         url_qr_code.location.add(ip_add)
 
+        url_qr_code.scan_count = 0
         url_qr_code.scan_count += 1
         url_qr_code.save()
+
 
         country_info = get_country_info(related_name, url_qr_code, request)
         city_info = get_city_info(related_name, url_qr_code)
